@@ -420,12 +420,13 @@ let delta_time;
 let oldTimeStamp;
 let fps;
 let since_last_asteroid = 0;
-let max_time_between_spawn = 500;
+let max_time_between_spawn = 350;
 
 function gameLoop(timestamp) {
   draw_background();
 
   delta_time = (timestamp - oldTimeStamp) / 1000;
+  if (isNaN(delta_time)) delta_time = 0;
   oldTimeStamp = timestamp;
   fps = Math.round(1 / delta_time);
 
@@ -434,14 +435,16 @@ function gameLoop(timestamp) {
   window_ctx.fillText("FPS: " + fps, 5, 20);
   window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 50);
   //* handling asteroid spawning
-  since_last_asteroid++;
+  since_last_asteroid += delta_time * 60;
+
   if (
     Math.floor(
       Math.random() *
         (max_time_between_spawn - since_last_asteroid) *
         Asteroid.asteroids.length
-    ) == 0
+    ) <= 0
   ) {
+    console.log(since_last_asteroid);
     Asteroid.asteroids.push(new Asteroid());
     since_last_asteroid = 0;
   }
