@@ -1,0 +1,33 @@
+body {
+    background: black;
+    margin: 0%;
+    border: 0%;
+}
+
+h1 {
+    font-family: sans-serif;
+    color: white;
+    /* font-size: 1000;
+    font-weight: 700; */
+    text-align: center;
+}
+
+#window {
+    display: flex;
+    justify-content: center;
+}
+
+#canvas_container {
+    background: rgba(255, 255, 255, 0);
+    border-radius: 15px;
+    height: 600px;
+    overflow: hidden;
+    width: 600px;
+    display: flex;
+    justify-content: center;
+    border: 5px solid white;
+
+
+    /* this fixes the overflow:hidden in Chrome/Opera */
+    /* -webkit-mask-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAA5JREFUeNpiYGBgAAgwAAAEAAGbA+oJAAAAAElFTkSuQmCC); */
+}
