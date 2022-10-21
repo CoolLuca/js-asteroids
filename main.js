@@ -46,6 +46,7 @@ document.onkeyup = function keyUp(event) {
 
 class Player {
   constructor() {
+    this.asteroid_kills = 0;
     this.key_map = {
       up: "w",
       left: "a",
@@ -122,7 +123,7 @@ class Player {
           this.position.y + this.RADIUS * Math.sin(this.angle)
         )
       );
-      console.log(Bullet.bullets);
+      // console.log(Bullet.bullets);
       // console.log(this.position);
       // console.log(this.angle);
     } else if (!key_state[this.key_map.fire]) {
@@ -161,7 +162,7 @@ class Player {
     let y_p4 = ypos - (this.RADIUS / 3.5) * Math.sin(angle);
 
     window_ctx.beginPath();
-    window_ctx.strokeStyle = "White";
+    window_ctx.strokeStyle = "Lime";
     window_ctx.fillStyle = "Black";
     window_ctx.lineWidth = 1.5;
     window_ctx.moveTo(x_head, y_head);
@@ -175,12 +176,63 @@ class Player {
 }
 
 class Asteroid {
-  static radius = [40, 20, 10];
-  static speed = [100, 200, 350];
+  static MAXLVL = 2;
+  static radius = [40, 30, 20];
+  static speed = [100, 200, 300];
   static asteroids = [];
-  static update_asteroids(delta_time) {
+  static update_asteroids(delta_time, plyr) {
     for (let i = 0; i < Asteroid.asteroids.length; i++) {
       Asteroid.asteroids[i].update(delta_time);
+      // console.log(plyr.position);
+      //* Check player
+      let player_distance = Math.sqrt(
+        (Asteroid.asteroids[i].position.x - plyr.position.x) *
+          (Asteroid.asteroids[i].position.x - plyr.position.x) +
+          (Asteroid.asteroids[i].position.y - plyr.position.y) *
+            (Asteroid.asteroids[i].position.y - plyr.position.y)
+      );
+
+      if (player_distance < Asteroid.asteroids[i].RADIUS) {
+        //* Player loose
+        console.log("Player hit");
+      }
+
+      let del_flag = false;
+      for (let j = 0; j < Bullet.bullets.length; j++) {
+        let bullet_distance = Math.sqrt(
+          (Asteroid.asteroids[i].position.x - Bullet.bullets[j].position.x) *
+            (Asteroid.asteroids[i].position.x - Bullet.bullets[j].position.x) +
+            (Asteroid.asteroids[i].position.y - Bullet.bullets[j].position.y) *
+              (Asteroid.asteroids[i].position.y - Bullet.bullets[j].position.y)
+        );
+
+        if (
+          bullet_distance <
+          Asteroid.asteroids[i].RADIUS + Bullet.bullets[j].RADIUS
+        ) {
+          //* remove bullet
+          Bullet.bullets.splice(j, 1);
+          j--;
+          del_flag = true;
+        }
+      }
+
+      //* delete asteriod, spawn with level+1
+      if (del_flag) {
+        let level = Asteroid.asteroids[i].level;
+        let xpos = Asteroid.asteroids[i].position.x;
+        let ypos = Asteroid.asteroids[i].position.y;
+        Asteroid.asteroids.splice(i, 1);
+        i--;
+        if (level != Asteroid.MAXLVL) {
+          for (let k = 0; k < 2; k++) {
+            let new_asteroid = new Asteroid();
+            new_asteroid.spawn(xpos, ypos, level + 1);
+            Asteroid.asteroids.push(new_asteroid);
+          }
+        }
+        plyr.asteroid_kills++;
+      }
     }
   }
   constructor() {
@@ -196,7 +248,6 @@ class Asteroid {
       y: this.SPEED * Math.sin(this.angle),
     };
     this.RADIUS = Asteroid.radius[this.level];
-    0, 1, 2, 3;
     let side = Math.floor(Math.random() * 4);
 
     if (side == 0) {
@@ -216,6 +267,21 @@ class Asteroid {
       this.position.y = WINDOW_HEIGHT;
       this.position.x = Math.random() * WINDOW_WIDTH;
     }
+  }
+
+  spawn(posx, posy, level) {
+    this.level = level;
+    this.position = {
+      x: posx,
+      y: posy,
+    };
+    this.SPEED = Asteroid.speed[this.level];
+    this.angle = Math.random() * 2 * Math.PI;
+    this.vel = {
+      x: this.SPEED * Math.cos(this.angle),
+      y: this.SPEED * Math.sin(this.angle),
+    };
+    this.RADIUS = Asteroid.radius[this.level];
   }
 
   draw() {
@@ -241,12 +307,6 @@ class Asteroid {
     this.position.x += this.vel.x * delta_time;
     this.position.y += this.vel.y * delta_time;
 
-    /*//TODO   check if distance from each bullet/player is < radius
-      //TODO   for bullet, splice bullet from array, delete asteroid, 
-      //TODO   then dependning on asteroid level spawn new asteroid with 1 more level need to create spawn() method
-      //TODO   for player: end game
-    */
-
     if (this.position.x > WINDOW_WIDTH + this.RADIUS) {
       this.position.x = 0;
     } else if (this.position.x < 0 - this.RADIUS) {
@@ -269,7 +329,7 @@ class Bullet {
       Bullet.bullets[i].update(delta_time);
       if (Bullet.bullets[i].time_since_spawn > Bullet.lifetime) {
         Bullet.bullets.splice(i, 1);
-        console.log(Bullet.bullets);
+        // console.log(Bullet.bullets);
       }
     }
   }
@@ -314,8 +374,8 @@ class Bullet {
     let p3x = this.position.x + this.draw_pt3.x;
     let p3y = this.position.y + this.draw_pt3.y;
     window_ctx.beginPath();
-    window_ctx.strokeStyle = "White";
-    window_ctx.fillStyle = "Yellow";
+    window_ctx.strokeStyle = "Yellow";
+    window_ctx.fillStyle = "Black";
     window_ctx.lineWidth = 1.5;
     window_ctx.moveTo(p1x, p1y);
     window_ctx.lineTo(p2x, p2y);
@@ -352,13 +412,15 @@ class Bullet {
 let p1 = new Player();
 
 Asteroid.asteroids.push(new Asteroid());
-console.log(Asteroid.asteroids);
+// console.log(Asteroid.asteroids);
 
 let b1 = new Bullet(0, 300, 300);
 
 let delta_time;
 let oldTimeStamp;
 let fps;
+let since_last_asteroid = 0;
+let max_time_between_spawn = 500;
 
 function gameLoop(timestamp) {
   draw_background();
@@ -370,8 +432,21 @@ function gameLoop(timestamp) {
   window_ctx.font = "20px Helvetica";
   window_ctx.fillStyle = "white";
   window_ctx.fillText("FPS: " + fps, 5, 20);
+  window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 50);
+  //* handling asteroid spawning
+  since_last_asteroid++;
+  if (
+    Math.floor(
+      Math.random() *
+        (max_time_between_spawn - since_last_asteroid) *
+        Asteroid.asteroids.length
+    ) == 0
+  ) {
+    Asteroid.asteroids.push(new Asteroid());
+    since_last_asteroid = 0;
+  }
 
-  Asteroid.update_asteroids(delta_time);
+  Asteroid.update_asteroids(delta_time, p1);
   Bullet.update_bullets(delta_time);
   p1.update(delta_time);
 
