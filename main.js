@@ -23,6 +23,7 @@ let key_state = {
   w: false,
   s: false,
   space: false,
+  Escape: false,
 };
 
 document.onkeydown = function keyDown(event) {
@@ -194,7 +195,8 @@ class Asteroid {
 
       if (player_distance < Asteroid.asteroids[i].RADIUS) {
         //* Player loose
-        console.log("Player hit");
+        // console.log("Player hit");
+        Menu.in_end_menu = true;
       }
 
       let del_flag = false;
@@ -409,18 +411,109 @@ class Bullet {
   }
 }
 
+class Menu {
+  static in_start_menu = false;
+  static in_pause_menu = false;
+  static pause_is_held = false;
+  static in_end_menu = false;
+  static updateStartMenu() {
+    if (key_state.s && Menu.in_start_menu) {
+      Menu.in_start_menu = false;
+    }
+    if (Menu.in_start_menu) {
+      Menu.drawStartMenu();
+    }
+  }
+  static drawStartMenu() {
+    window_ctx.font = "25px helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.textAlign = "center";
+    window_ctx.fillText(
+      "Press <s> to Start!",
+      WINDOW_WIDTH / 2,
+      WINDOW_HEIGHT / 2
+    );
+  }
+  static updatePauseMenu() {
+    if (Menu.in_start_menu || Menu.in_end_menu) {
+      return;
+    }
+    if (key_state.Escape && !Menu.in_pause_menu && !Menu.pause_is_held) {
+      Menu.in_pause_menu = true;
+      Menu.pause_is_held = true;
+    }
+    if (!key_state.Escape) {
+      Menu.pause_is_held = false;
+    }
+    if (key_state.Escape && Menu.in_pause_menu && !Menu.pause_is_held) {
+      Menu.in_pause_menu = false;
+      Menu.pause_is_held = true;
+    }
+    if (Menu.in_pause_menu) {
+      Menu.drawPauseMenu();
+    }
+  }
+  static drawPauseMenu() {
+    window_ctx.font = "25px helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.textAlign = "center";
+    window_ctx.fillText("Paused", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2);
+  }
+  static updateEndMenu() {
+    if (Menu.in_end_menu) {
+      Menu.drawEndMenu();
+    }
+    if (Menu.in_end_menu && key_state.s) {
+      p1 = new Player();
+      Menu.in_end_menu = false;
+      Asteroid.asteroids = [];
+      Bullet.bullets = [];
+      //* restart game
+    }
+  }
+  static drawEndMenu() {
+    window_ctx.font = "25px helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.textAlign = "center";
+    window_ctx.fillText("Game Over!", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20);
+    window_ctx.fillText(
+      "<s> to play again",
+      WINDOW_WIDTH / 2,
+      WINDOW_HEIGHT / 2 + 20
+    );
+  }
+  constructor() {}
+}
+
+class UIInfo {
+  static drawFps(fps) {
+    window_ctx.textAlign = "left";
+    window_ctx.font = "20px Helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.fillText("FPS: " + fps, 5, 20);
+  }
+
+  static drawEscHelper() {
+    window_ctx.textAlign = "right";
+    window_ctx.font = "20px Helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.fillText("*esc* to pause", WINDOW_WIDTH - 5, 20);
+  }
+}
+
 let p1 = new Player();
 
 Asteroid.asteroids.push(new Asteroid());
 // console.log(Asteroid.asteroids);
 
-let b1 = new Bullet(0, 300, 300);
-
 let delta_time;
 let oldTimeStamp;
 let fps;
 let since_last_asteroid = 0;
-let max_time_between_spawn = 350;
+let max_time_between_spawn = 200;
+Menu.in_start_menu = true;
+Menu.in_pause_menu = false;
+Menu.in_end_menu = false;
 
 function gameLoop(timestamp) {
   draw_background();
@@ -430,28 +523,45 @@ function gameLoop(timestamp) {
   oldTimeStamp = timestamp;
   fps = Math.round(1 / delta_time);
 
-  window_ctx.font = "20px Helvetica";
-  window_ctx.fillStyle = "white";
-  window_ctx.fillText("FPS: " + fps, 5, 20);
-  window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 50);
-  //* handling asteroid spawning
-  since_last_asteroid += delta_time * 60;
+  UIInfo.drawFps(fps);
 
-  if (
-    Math.floor(
-      Math.random() *
-        (max_time_between_spawn - since_last_asteroid) *
-        Asteroid.asteroids.length
-    ) <= 0
-  ) {
-    console.log(since_last_asteroid);
-    Asteroid.asteroids.push(new Asteroid());
-    since_last_asteroid = 0;
+  Menu.updateStartMenu();
+
+  Menu.updatePauseMenu();
+
+  Menu.updateEndMenu();
+
+  if (!Menu.in_start_menu && !Menu.in_pause_menu) {
+    if (!Menu.in_end_menu) {
+      UIInfo.drawEscHelper();
+    }
+
+    window_ctx.textAlign = "left";
+    window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 50);
+
+    //* Still update bullets & asteroids in end menu
+
+    Asteroid.update_asteroids(delta_time, p1);
+    Bullet.update_bullets(delta_time);
+    if (!Menu.in_end_menu) {
+      //* handling asteroid spawning
+      since_last_asteroid += delta_time * 60;
+
+      if (
+        Math.floor(
+          Math.random() *
+            (max_time_between_spawn - since_last_asteroid) *
+            Asteroid.asteroids.length *
+            2
+        ) <= 0
+      ) {
+        // console.log(since_last_asteroid);
+        Asteroid.asteroids.push(new Asteroid());
+        since_last_asteroid = 0;
+      }
+      p1.update(delta_time);
+    }
   }
-
-  Asteroid.update_asteroids(delta_time, p1);
-  Bullet.update_bullets(delta_time);
-  p1.update(delta_time);
 
   window.requestAnimationFrame(gameLoop);
 }
