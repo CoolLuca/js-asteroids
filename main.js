@@ -515,6 +515,7 @@ Menu.in_start_menu = true;
 Menu.in_pause_menu = false;
 Menu.in_end_menu = false;
 
+//GAME LOOP
 function gameLoop(timestamp) {
   draw_background();
 
