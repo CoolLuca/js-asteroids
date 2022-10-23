@@ -429,7 +429,7 @@ class Menu {
     window_ctx.fillStyle = "white";
     window_ctx.textAlign = "center";
     window_ctx.fillText(
-      "Press <s> to Start!",
+      "Press *s* to Start!",
       WINDOW_WIDTH / 2,
       WINDOW_HEIGHT / 2
     );
