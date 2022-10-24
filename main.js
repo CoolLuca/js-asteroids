@@ -18,17 +18,17 @@ const setup_window = function () {
 setup_window();
 
 let key_state = {
-  d: false,
-  a: false,
-  w: false,
-  s: false,
+  KeyD: false,
+  KeyA: false,
+  KeyW: false,
+  KeyS: false,
   space: false,
   Escape: false,
 };
 
 document.onkeydown = function keyDown(event) {
-  if (event.key in key_state) {
-    key_state[event.key] = true;
+  if (event.code in key_state) {
+    key_state[event.code] = true;
     //console.log(event.key + " is " + key_state[event.key]);
   }
   if (event.code == "Space") {
@@ -36,8 +36,8 @@ document.onkeydown = function keyDown(event) {
   }
 };
 document.onkeyup = function keyUp(event) {
-  if (event.key in key_state) {
-    key_state[event.key] = false;
+  if (event.code in key_state) {
+    key_state[event.code] = false;
     //console.log(event.key + " is " + key_state[event.key]);
   }
   if (event.code == "Space") {
@@ -49,10 +49,10 @@ class Player {
   constructor() {
     this.asteroid_kills = 0;
     this.key_map = {
-      up: "w",
-      left: "a",
-      down: "s",
-      right: "d",
+      up: "KeyW",
+      left: "KeyA",
+      down: "KeyS",
+      right: "KeyD",
       fire: "space",
     };
 
@@ -417,7 +417,7 @@ class Menu {
   static pause_is_held = false;
   static in_end_menu = false;
   static updateStartMenu() {
-    if (key_state.s && Menu.in_start_menu) {
+    if (key_state.KeyS && Menu.in_start_menu) {
       Menu.in_start_menu = false;
     }
     if (Menu.in_start_menu) {
@@ -463,7 +463,7 @@ class Menu {
     if (Menu.in_end_menu) {
       Menu.drawEndMenu();
     }
-    if (Menu.in_end_menu && key_state.s) {
+    if (Menu.in_end_menu && key_state.KeyS) {
       p1 = new Player();
       Menu.in_end_menu = false;
       Asteroid.asteroids = [];
