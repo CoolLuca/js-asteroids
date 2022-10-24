@@ -499,6 +499,12 @@ class UIInfo {
     window_ctx.fillStyle = "white";
     window_ctx.fillText("*esc* to pause", WINDOW_WIDTH - 5, 20);
   }
+  static drawKills() {
+    window_ctx.textAlign = "left";
+    window_ctx.font = "20px Helvetica";
+    window_ctx.fillStyle = "white";
+    window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 20);
+  }
 }
 
 let p1 = new Player();
@@ -537,8 +543,7 @@ function gameLoop(timestamp) {
       UIInfo.drawEscHelper();
     }
 
-    window_ctx.textAlign = "left";
-    window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 20);
+    UIInfo.drawKills();
 
     //* Still update bullets & asteroids in end menu
 
