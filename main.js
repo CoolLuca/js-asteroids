@@ -477,7 +477,7 @@ class Menu {
     window_ctx.textAlign = "center";
     window_ctx.fillText("Game Over!", WINDOW_WIDTH / 2, WINDOW_HEIGHT / 2 - 20);
     window_ctx.fillText(
-      "<s> to play again",
+      "*s* to play again",
       WINDOW_WIDTH / 2,
       WINDOW_HEIGHT / 2 + 20
     );
