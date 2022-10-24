@@ -193,7 +193,7 @@ class Asteroid {
             (Asteroid.asteroids[i].position.y - plyr.position.y)
       );
 
-      if (player_distance < Asteroid.asteroids[i].RADIUS) {
+      if (player_distance < Asteroid.asteroids[i].RADIUS + plyr.RADIUS / 3) {
         //* Player loose
         // console.log("Player hit");
         Menu.in_end_menu = true;
@@ -490,7 +490,7 @@ class UIInfo {
     window_ctx.textAlign = "left";
     window_ctx.font = "20px Helvetica";
     window_ctx.fillStyle = "white";
-    window_ctx.fillText("FPS: " + fps, 5, 20);
+    window_ctx.fillText("FPS: " + fps, 5, WINDOW_HEIGHT - 20);
   }
 
   static drawEscHelper() {
@@ -510,7 +510,7 @@ let delta_time;
 let oldTimeStamp;
 let fps;
 let since_last_asteroid = 0;
-let max_time_between_spawn = 200;
+let max_time_between_spawn = 250;
 Menu.in_start_menu = true;
 Menu.in_pause_menu = false;
 Menu.in_end_menu = false;
@@ -524,7 +524,7 @@ function gameLoop(timestamp) {
   oldTimeStamp = timestamp;
   fps = Math.round(1 / delta_time);
 
-  UIInfo.drawFps(fps);
+  // UIInfo.drawFps(fps);
 
   Menu.updateStartMenu();
 
@@ -538,7 +538,7 @@ function gameLoop(timestamp) {
     }
 
     window_ctx.textAlign = "left";
-    window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 50);
+    window_ctx.fillText("Kills: " + p1.asteroid_kills, 5, 20);
 
     //* Still update bullets & asteroids in end menu
 
